@@ -32,12 +32,12 @@ export class FirebaseImplementation {
 
   constructor() {
     const app = initializeApp({
-      apiKey: 'AIzaSyDmQZMXBMLtwaVWubvnVkXK0iH8sZQgbIQ',
-      authDomain: 'financialcontroller-6c561.firebaseapp.com',
-      projectId: 'financialcontroller-6c561',
-      storageBucket: 'financialcontroller-6c561.appspot.com',
-      messagingSenderId: '382232109506',
-      appId: '1:382232109506:web:72114f5fb0a2af84b9765b',
+      apiKey: process.env.FIREBASE_API_KEY,
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      appId: process.env.APP_ID,
+      messagingSenderId: process.env.MESSAGING_SENDER_ID,
+      storageBucket: process.env.storageBucket,
     });
     this.db = getFirestore(app);
   }
@@ -111,18 +111,18 @@ export class FirebaseImplementation {
 
     const collectionRef = collection(this.db, props.collection);
 
-    if(queue.length == 0) {
+    if (queue.length == 0) {
       const firebaseQueries = query(
         collectionRef,
         ...queries?.map((query) =>
           where(query.field, query.condition, query.value),
         ),
       );
-  
+
       const snapShot = await getDocs(firebaseQueries);
-  
+
       const data = sanitilizeArrayData<T>(snapShot);
-  
+
       if (data.length > 1) {
         this.generateFirebaseError(
           'Multiple documents found with the same query',
@@ -242,12 +242,12 @@ export class FirebaseImplementation {
       return;
     }
 
-    if(props.query) {
+    if (props.query) {
       const ids = await this.findAll({
         collection: props.collection,
         query: props.query,
-        map: (doc) => (doc.id as string),
-      }); 
+        map: (doc) => doc.id as string,
+      });
 
       await PromiseScheduler(
         ids.map((id) => deleteDoc(doc(this.db, `${props.collection}/${id}`))),
