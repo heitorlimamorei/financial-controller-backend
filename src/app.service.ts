@@ -1,20 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { FirebaseImplementation } from './shared/providers/firebase/implementation';
-import { collection, getDocs } from 'firebase/firestore';
+
+interface ISheet {
+  id: string;
+  owner: string;
+  type: string;
+  tiposDeGastos: string[];
+  totalValue: number;
+  name: string;
+}
 
 @Injectable()
 export class AppService {
   constructor(private readonly firebase: FirebaseImplementation) {}
   async getHello() {
-    const db = this.firebase.getFirestore();
+   const user = await this.firebase.findOne({
+    id: 'vPbF899RZHBFQIjJNEQN',
+    collection: 'users'
+   });
 
-    const sheetCollection = collection(db, 'planilhas');
-
-    const sheetSnapShot = await getDocs(sheetCollection);
-
-    const sheets = sheetSnapShot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-
-
-    return sheets;
+   return user;
   }
 }
