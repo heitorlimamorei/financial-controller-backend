@@ -151,7 +151,11 @@ export class FirebaseImplementation {
 
     const collectionRef = collection(this.db, props.collection);
 
-    const docRef = await addDoc(collectionRef, props.payload);
+    const docRef = await addDoc(collectionRef, {
+      ...props.payload,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
     if (!docRef.id) {
       this.generateFirebaseError('Failed to create document', 500);
@@ -179,6 +183,7 @@ export class FirebaseImplementation {
 
     await updateDoc(docRef, {
       ...props.payload,
+      updatedAt: new Date(),
     });
   }
 
