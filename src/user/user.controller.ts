@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+  Put,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,8 +26,7 @@ export class UserController {
 
   @Get()
   async findAll(@Query() query: FindAllQueryDto) {
-    console.log(query);
-     if (query.email) {
+    if (query.email) {
       return await this.userService.findByEmail(query.email as string);
     }
 

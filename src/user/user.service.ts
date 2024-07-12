@@ -6,7 +6,7 @@ import { ICreateResp, IUser } from './user.types';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly firebase: FirebaseImplementation){}
+  constructor(private readonly firebase: FirebaseImplementation) {}
 
   async create(createUserDto: CreateUserDto): Promise<ICreateResp> {
     const resp = await this.firebase.Create({
