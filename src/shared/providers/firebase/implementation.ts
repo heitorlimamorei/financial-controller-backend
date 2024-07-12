@@ -106,6 +106,10 @@ export class FirebaseImplementation {
       const docRef = doc(this.db, `${props.collection}/${props.id}`);
       const docSnapShot = await getDoc(docRef);
 
+      if (!docSnapShot.exists()) {
+        throw new HttpException('Failed to find document', 404);
+      }
+      
       queue.push({ id: docSnapShot.id, ...docSnapShot.data() } as T);
     }
 
