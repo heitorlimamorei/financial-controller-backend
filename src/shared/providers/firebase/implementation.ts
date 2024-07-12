@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import {
   addDoc,
   collection,
@@ -84,6 +85,7 @@ export class FirebaseImplementation {
       queue.push(queue[lastIndex].map((c) => props.map(c)));
     }
 
+    console.log(queue);
     return queue[queue.length - 1];
   }
 
@@ -109,7 +111,7 @@ export class FirebaseImplementation {
       if (!docSnapShot.exists()) {
         throw new HttpException('Failed to find document', 404);
       }
-      
+
       queue.push({ id: docSnapShot.id, ...docSnapShot.data() } as T);
     }
 
@@ -134,7 +136,7 @@ export class FirebaseImplementation {
         );
       }
 
-      queue.push(data);
+      queue.push(data[0]);
     }
 
     if (props.map) {
