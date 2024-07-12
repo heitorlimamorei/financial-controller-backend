@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FirebaseModule } from './shared/providers/firebase/firebase.module';
 import { UserModule } from './user/user.module';
+import { CreditCardModule } from './credit_card/credit_card.module';
 
 @Module({
-  imports: [FirebaseModule, UserModule],
+  imports: [FirebaseModule, UserModule, CreditCardModule],
   controllers: [AppController],
   providers: [AppService],
 })
