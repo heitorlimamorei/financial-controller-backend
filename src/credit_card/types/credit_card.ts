@@ -1,3 +1,5 @@
+import { firebaseTimesStampType } from 'src/shared/utils/firebase/firebase.types';
+
 export type CardBrands = 'visa' | 'mastercard' | 'elo';
 
 export default interface ICreditCard {
@@ -6,7 +8,7 @@ export default interface ICreditCard {
   nickname: string;
   cardNumber: string;
   flag: CardBrands;
-  expirationDate: string;
+  expirationDate: firebaseTimesStampType;
   financialInstitution: string;
   speendingLimit: number;
   availableLimit: number;
