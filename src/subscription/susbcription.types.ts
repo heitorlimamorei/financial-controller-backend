@@ -1,5 +1,6 @@
 import { firebaseTimesStampType } from 'src/shared/utils/firebase/firebase.types';
 
+// Subcription interface
 export interface ISubscription {
   id: string;
   ownerId: string;
