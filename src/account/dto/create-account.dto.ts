@@ -13,4 +13,8 @@ export class CreateAccountDto {
   @ApiProperty({ required: true })
   @IsNumber({}, { message: 'The initial balance must be a number' })
   balance: number;
+
+  @ApiProperty({ required: true })
+  @IsString({ message: 'The nickname must be a string' })
+  nickname: string;
 }
