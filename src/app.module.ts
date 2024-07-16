@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { CreditCardModule } from './credit_card/credit_card.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { AccountModule } from './account/account.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AccountModule } from './account/account.module';
     CreditCardModule,
     SubscriptionModule,
     AccountModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
