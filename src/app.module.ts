@@ -5,9 +5,16 @@ import { FirebaseModule } from './shared/providers/firebase/firebase.module';
 import { UserModule } from './user/user.module';
 import { CreditCardModule } from './credit_card/credit_card.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
-  imports: [FirebaseModule, UserModule, CreditCardModule, SubscriptionModule],
+  imports: [
+    FirebaseModule,
+    UserModule,
+    CreditCardModule,
+    SubscriptionModule,
+    AccountModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
