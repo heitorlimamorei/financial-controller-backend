@@ -85,7 +85,6 @@ export class FirebaseImplementation {
       queue.push(queue[lastIndex].map((c) => props.map(c)));
     }
 
-    console.log(queue);
     return queue[queue.length - 1];
   }
 

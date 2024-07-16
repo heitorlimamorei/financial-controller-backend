@@ -1,10 +1,10 @@
 export interface ICreateResp {
-    id: string;
+  id: string;
 }
 
 export interface IUser {
-    id: string;
-    name: string;
-    email: string;
-    sheetIds: string[];
+  id: string;
+  name: string;
+  email: string;
+  sheetIds: string[];
 }
