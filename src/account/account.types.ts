@@ -5,3 +5,12 @@ export interface IAccount {
   financial_institution: string;
   balance: number;
 }
+
+export interface IResolveBalanceDelta {
+  ammountPrev: number;
+  ammount: number;
+  typePrev: 'INCOME' | 'EXPENSE';
+  type: 'INCOME' | 'EXPENSE';
+  accountId: string;
+  ownerId: string;
+}
