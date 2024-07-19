@@ -7,6 +7,8 @@ import { CreditCardModule } from './credit_card/credit_card.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { AccountModule } from './account/account.module';
 import { CategoryModule } from './category/category.module';
+import { SpreadsheetModule } from './spreadsheet/spreadsheet.module';
+import { ItemsModule } from './items/items.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { CategoryModule } from './category/category.module';
     SubscriptionModule,
     AccountModule,
     CategoryModule,
+    SpreadsheetModule,
+    ItemsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

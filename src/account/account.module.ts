@@ -6,6 +6,7 @@ import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [FirebaseModule, UserModule],
+  exports: [AccountService],
   controllers: [AccountController],
   providers: [AccountService],
 })

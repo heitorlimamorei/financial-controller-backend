@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { FirebaseImplementation } from 'src/shared/providers/firebase/implementation';
-import { IAccount } from './account.types';
+import { IAccount, IResolveBalanceDelta } from './account.types';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -103,6 +103,26 @@ export class AccountService {
     await this.update(id, owid, {
       nickname: account.nickname,
       balance: account.balance - ammount,
+    });
+  }
+
+  async resolveBalanceDelta(props: IResolveBalanceDelta): Promise<void> {
+    const account = await this.findOne(props.accountId, props.ownerId);
+    let delta = 0;
+
+    if (props.typePrev == 'EXPENSE' && props.type == 'EXPENSE') {
+      delta = props.ammountPrev - props.ammount;
+    } else if (props.typePrev == 'INCOME' && props.type == 'INCOME') {
+      delta = props.ammount - props.ammountPrev;
+    } else if (props.typePrev == 'EXPENSE' && props.type == 'INCOME') {
+      delta = props.ammountPrev + props.ammount;
+    } else {
+      delta -= props.ammountPrev + props.ammount;
+    }
+
+    await this.update(account.id, account.ownerId, {
+      nickname: account.nickname,
+      balance: account.balance + delta,
     });
   }
 
