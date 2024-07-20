@@ -207,6 +207,76 @@ export class CreditCardService {
     });
   }
 
+  async increaseAvailableLimit(
+    owid: string,
+    cardId: string,
+    amount: number,
+  ): Promise<void> {
+    if (amount <= 0) {
+      throw new HttpException(
+        'SERVICE: To increase the available limit the amount must be greater than zero.',
+        400,
+      );
+    }
+
+    const currentCard = await this.findOne(owid, cardId);
+
+    if (currentCard.speendingLimit < amount + currentCard.availableLimit) {
+      throw new HttpException(
+        'SERVICE: The available limit cannot exceed the card limit.',
+        400,
+      );
+    }
+
+    if (!currentCard) {
+      throw new HttpException('Failed to find creditCard', 404);
+    }
+
+    await this.update(cardId, {
+      ownerId: owid,
+      availableLimit: currentCard.availableLimit + amount,
+      speendingLimit: currentCard.speendingLimit,
+      nickname: currentCard.nickname,
+      cardNumber: currentCard.cardNumber,
+      flag: currentCard.flag,
+    });
+  }
+
+  async decreaseAvailableLimit(
+    owid: string,
+    cardId: string,
+    amount: number,
+  ): Promise<void> {
+    if (amount <= 0) {
+      throw new HttpException(
+        'SERVICE: To decrease the available limit the amount must be greater than zero.',
+        400,
+      );
+    }
+
+    const currentCard = await this.findOne(owid, cardId);
+
+    if (0 > currentCard.availableLimit - amount) {
+      throw new HttpException(
+        'SERVICE: The available limit - amount must be greather or equal to zero.',
+        400,
+      );
+    }
+
+    if (!currentCard) {
+      throw new HttpException('Failed to find creditCard', 404);
+    }
+
+    await this.update(cardId, {
+      ownerId: owid,
+      availableLimit: currentCard.availableLimit - amount,
+      speendingLimit: currentCard.speendingLimit,
+      nickname: currentCard.nickname,
+      cardNumber: currentCard.cardNumber,
+      flag: currentCard.flag,
+    });
+  }
+
   async remove(ownerId: string, id: string): Promise<void> {
     await this.firebase.DeleteOne({
       collection: `users/${ownerId}/credit_card`,
