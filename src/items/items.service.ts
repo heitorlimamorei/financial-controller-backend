@@ -14,6 +14,7 @@ export class ItemsService {
     private readonly firebaseSvc: FirebaseImplementation,
     private readonly accountSvc: AccountService,
   ) {}
+
   async create(createItemDto: CreateItemDto): Promise<string> {
     if (createItemDto.amount <= 0) {
       throw new HttpException('SERVICE: Amount must be greater than 0', 400);
