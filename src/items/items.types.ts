@@ -13,3 +13,14 @@ export interface IItem {
   date: firebaseTimesStampType;
   type: itemType;
 }
+
+export interface ICreditCardItem {
+  id: string;
+  categoryId: string;
+  ownerId: string;
+  name: string;
+  description: string;
+  amount: number;
+  date: firebaseTimesStampType;
+  creditCardId: string;
+}
