@@ -3,6 +3,10 @@ import { IsDateString, IsNumber, IsString } from 'class-validator';
 
 export class CreateCreditCardItemDto {
   @ApiProperty({ required: true })
+  @IsString({ message: 'The sheetId must be a string' })
+  sheetId: string;
+
+  @ApiProperty({ required: true })
   @IsString({ message: 'The OwnerId must be a string' })
   ownerId: string;
 
