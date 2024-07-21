@@ -3,8 +3,9 @@ import { CreditCardService } from 'src/credit_card/credit_card.service';
 import { FirebaseImplementation } from 'src/shared/providers/firebase/implementation';
 import { CreateCreditCardItemDto } from './dto/create-credit-card-item.dto';
 import { toggleJsonToDate } from 'src/shared/utils/date/datefunctions';
-import { ICreditCardItem } from './items.types';
+import { ICreditCardItem, IUpdateCardItem } from './items.types';
 import { IQuery } from 'src/shared/providers/firebase/types/firebase.api.types';
+import { UpdateCreditCardItemDto } from './dto/update-credit-card-item.dto';
 
 @Injectable()
 export class CreditCardItemService {
@@ -13,7 +14,7 @@ export class CreditCardItemService {
     private readonly creditCardSvc: CreditCardService,
   ) {}
 
-  async create(newCreditCardItemDto: CreateCreditCardItemDto) {
+  async create(newCreditCardItemDto: CreateCreditCardItemDto): Promise<string> {
     if (newCreditCardItemDto.amount <= 0) {
       throw new HttpException('SERVICE: Amout must be greater than zero.', 400);
     }
@@ -51,7 +52,7 @@ export class CreditCardItemService {
     const dateF = toggleJsonToDate(newCreditCardItemDto.date);
 
     const resp = await this.firebaseSvc.Create({
-      collection: `sheets/${newCreditCardItemDto.ownerId}/credit_card_items`,
+      collection: `sheets/${newCreditCardItemDto.sheetId}/credit_card_items`,
       payload: {
         ownerId: newCreditCardItemDto.ownerId,
         name: newCreditCardItemDto.name,
@@ -75,29 +76,6 @@ export class CreditCardItemService {
       newCreditCardItemDto.creditCardId,
       newCreditCardItemDto.amount,
     );
-  }
-
-  async findAll(
-    sheetId: string,
-    creditCardId: string,
-  ): Promise<ICreditCardItem[]> {
-    const resp = await this.firebaseSvc.findAll<ICreditCardItem>({
-      collection: `sheets/${sheetId}/credit_card_items`,
-      query: [
-        {
-          field: 'creditCardId',
-          condition: '==',
-          value: creditCardId,
-        },
-      ],
-    });
-
-    if (resp.length == 0) {
-      throw new HttpException(
-        'SERVICE: No items found for this sheetId: ' + sheetId,
-        404,
-      );
-    }
 
     return resp;
   }
@@ -135,6 +113,66 @@ export class CreditCardItemService {
     return resp;
   }
 
+  async findAll(sheetId: string): Promise<ICreditCardItem[]> {
+    const resp = await this.firebaseSvc.findAll<ICreditCardItem>({
+      collection: `sheets/${sheetId}/credit_card_items`,
+    });
+
+    if (resp.length == 0) {
+      throw new HttpException('SERVICE: No items found for these queries', 404);
+    }
+
+    return resp;
+  }
+
+  async update(
+    id: string,
+    sheetId: string,
+    cardId: string,
+    owid: string,
+    updateCreditCardItemDto: UpdateCreditCardItemDto,
+  ) {
+    if (updateCreditCardItemDto.amount <= 0) {
+      throw new HttpException('SERVICE: Amout must be greater than zero.', 400);
+    }
+
+    if (updateCreditCardItemDto.parcellsNumber < 1) {
+      throw new HttpException(
+        'SERVICE: Parcells number must be greater than zero.',
+        400,
+      );
+    }
+
+    if (updateCreditCardItemDto.interest < 0) {
+      throw new HttpException(
+        'SERVICE: Interest must be greater or equal to zero.',
+        400,
+      );
+    }
+
+    const creditCardItem: IUpdateCardItem = { ...updateCreditCardItemDto };
+
+    if (updateCreditCardItemDto.date) {
+      creditCardItem.date = toggleJsonToDate(updateCreditCardItemDto.date);
+    }
+
+    if (updateCreditCardItemDto?.amount) {
+      const amountPrev = (await this.findOne(id, sheetId)).amount;
+      await this.creditCardSvc.resolveAvailibeLimitDelta(
+        owid,
+        cardId,
+        amountPrev,
+        updateCreditCardItemDto.amount,
+      );
+    }
+
+    await this.firebaseSvc.UpdateOne({
+      collection: `sheets/${sheetId}/credit_card_items`,
+      id,
+      payload: creditCardItem,
+    });
+  }
+
   async remove(id: string, sheetId: string) {
     const item = await this.findOne(id, sheetId);
 
@@ -142,15 +180,15 @@ export class CreditCardItemService {
       throw new HttpException('SERVICE: No item found for this Item Id', 404);
     }
 
-    await this.firebaseSvc.DeleteOne({
-      collection: `sheets/${sheetId}/credit_card_items`,
-      id,
-    });
-
     await this.creditCardSvc.increaseAvailableLimit(
       item.ownerId,
       item.creditCardId,
       item.amount,
     );
+
+    await this.firebaseSvc.DeleteOne({
+      collection: `sheets/${sheetId}/credit_card_items`,
+      id,
+    });
   }
 }
