@@ -61,7 +61,7 @@ export class CreditCardService {
 
     const payload = {
       ...createCreditCardDto,
-      availableLimit: createCreditCardDto.speendingLimit,
+      availableLimit: createCreditCardDto.spendingLimit,
       cardNumber,
       flag: cardFlag,
       expirationDate,
@@ -99,7 +99,7 @@ export class CreditCardService {
         return {
           id: c.id,
           ownerId: c.ownerId,
-          speendingLimit: c.speendingLimit,
+          speendingLimit: c.spendingLimit,
           availableLimit: c.availableLimit,
         };
       },
@@ -199,7 +199,7 @@ export class CreditCardService {
       id,
       payload: {
         availableLimit: updateCreditCardDto.availableLimit,
-        speendingLimit: updateCreditCardDto.speendingLimit,
+        speendingLimit: updateCreditCardDto.spendingLimit,
         nickname: updateCreditCardDto.nickname,
         cardNumber: cardNumber,
         flag: cardFlag,
@@ -221,7 +221,7 @@ export class CreditCardService {
 
     const currentCard = await this.findOne(owid, cardId);
 
-    if (currentCard.speendingLimit < amount + currentCard.availableLimit) {
+    if (currentCard.spendingLimit < amount + currentCard.availableLimit) {
       throw new HttpException(
         'SERVICE: The available limit cannot exceed the card limit.',
         400,
@@ -235,7 +235,7 @@ export class CreditCardService {
     await this.update(cardId, {
       ownerId: owid,
       availableLimit: currentCard.availableLimit + amount,
-      speendingLimit: currentCard.speendingLimit,
+      spendingLimit: currentCard.spendingLimit,
       nickname: currentCard.nickname,
       cardNumber: currentCard.cardNumber,
       flag: currentCard.flag,
@@ -270,10 +270,32 @@ export class CreditCardService {
     await this.update(cardId, {
       ownerId: owid,
       availableLimit: currentCard.availableLimit - amount,
-      speendingLimit: currentCard.speendingLimit,
+      spendingLimit: currentCard.spendingLimit,
       nickname: currentCard.nickname,
       cardNumber: currentCard.cardNumber,
       flag: currentCard.flag,
+    });
+  }
+
+  async resolveAvailibeLimitDelta(
+    owid: string,
+    cardId: string,
+    amountPrev: number,
+    ammount: number,
+  ) {
+    const delta = amountPrev - ammount;
+
+    if (delta == 0) return;
+
+    const card = await this.findOne(owid, cardId);
+
+    await this.update(cardId, {
+      availableLimit: card.availableLimit + delta,
+      spendingLimit: card.spendingLimit,
+      nickname: card.nickname,
+      cardNumber: card.cardNumber,
+      flag: card.flag,
+      ownerId: owid,
     });
   }
 
