@@ -10,13 +10,13 @@ export default interface ICreditCard {
   flag: CardBrands;
   expirationDate: firebaseTimesStampType;
   financialInstitution: string;
-  speendingLimit: number;
+  spendingLimit: number;
   availableLimit: number;
 }
 
 export interface ICreditCardLimitsData {
   id: string;
   ownerId: string;
-  speendingLimit: number;
+  spendingLimit: number;
   availableLimit: number;
 }

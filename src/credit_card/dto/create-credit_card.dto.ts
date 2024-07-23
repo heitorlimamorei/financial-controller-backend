@@ -32,5 +32,5 @@ export class CreateCreditCardDto {
 
   @ApiProperty({ required: true })
   @IsNumber({}, { message: 'The speeding limit must be a number' })
-  speendingLimit: number;
+  spendingLimit: number;
 }

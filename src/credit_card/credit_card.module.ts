@@ -5,6 +5,7 @@ import { FirebaseModule } from 'src/shared/providers/firebase/firebase.module';
 import { CreditCardUtilModule } from 'src/shared/providers/credit_card_util/CreditCardUtils.module';
 
 @Module({
+  exports: [CreditCardService],
   imports: [FirebaseModule, CreditCardUtilModule],
   controllers: [CreditCardController],
   providers: [CreditCardService],

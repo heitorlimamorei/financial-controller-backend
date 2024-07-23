@@ -69,7 +69,7 @@ export class ItemsController {
     });
   }
 
-  @Put()
+  @Put(':id')
   async update(
     @Param('id') id: string,
     @Query('sheetid') sheetId: string,

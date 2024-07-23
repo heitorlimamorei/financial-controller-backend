@@ -61,7 +61,7 @@ export class CreditCardService {
 
     const payload = {
       ...createCreditCardDto,
-      availableLimit: createCreditCardDto.speendingLimit,
+      availableLimit: createCreditCardDto.spendingLimit,
       cardNumber,
       flag: cardFlag,
       expirationDate,
@@ -99,7 +99,7 @@ export class CreditCardService {
         return {
           id: c.id,
           ownerId: c.ownerId,
-          speendingLimit: c.speendingLimit,
+          speendingLimit: c.spendingLimit,
           availableLimit: c.availableLimit,
         };
       },
@@ -199,11 +199,103 @@ export class CreditCardService {
       id,
       payload: {
         availableLimit: updateCreditCardDto.availableLimit,
-        speendingLimit: updateCreditCardDto.speendingLimit,
+        speendingLimit: updateCreditCardDto.spendingLimit,
         nickname: updateCreditCardDto.nickname,
         cardNumber: cardNumber,
         flag: cardFlag,
       },
+    });
+  }
+
+  async increaseAvailableLimit(
+    owid: string,
+    cardId: string,
+    amount: number,
+  ): Promise<void> {
+    if (amount <= 0) {
+      throw new HttpException(
+        'SERVICE: To increase the available limit the amount must be greater than zero.',
+        400,
+      );
+    }
+
+    const currentCard = await this.findOne(owid, cardId);
+
+    if (currentCard.spendingLimit < amount + currentCard.availableLimit) {
+      throw new HttpException(
+        'SERVICE: The available limit cannot exceed the card limit.',
+        400,
+      );
+    }
+
+    if (!currentCard) {
+      throw new HttpException('Failed to find creditCard', 404);
+    }
+
+    await this.update(cardId, {
+      ownerId: owid,
+      availableLimit: currentCard.availableLimit + amount,
+      spendingLimit: currentCard.spendingLimit,
+      nickname: currentCard.nickname,
+      cardNumber: currentCard.cardNumber,
+      flag: currentCard.flag,
+    });
+  }
+
+  async decreaseAvailableLimit(
+    owid: string,
+    cardId: string,
+    amount: number,
+  ): Promise<void> {
+    if (amount <= 0) {
+      throw new HttpException(
+        'SERVICE: To decrease the available limit the amount must be greater than zero.',
+        400,
+      );
+    }
+
+    const currentCard = await this.findOne(owid, cardId);
+
+    if (0 > currentCard.availableLimit - amount) {
+      throw new HttpException(
+        'SERVICE: The available limit - amount must be greather or equal to zero.',
+        400,
+      );
+    }
+
+    if (!currentCard) {
+      throw new HttpException('Failed to find creditCard', 404);
+    }
+
+    await this.update(cardId, {
+      ownerId: owid,
+      availableLimit: currentCard.availableLimit - amount,
+      spendingLimit: currentCard.spendingLimit,
+      nickname: currentCard.nickname,
+      cardNumber: currentCard.cardNumber,
+      flag: currentCard.flag,
+    });
+  }
+
+  async resolveAvailibeLimitDelta(
+    owid: string,
+    cardId: string,
+    amountPrev: number,
+    ammount: number,
+  ) {
+    const delta = amountPrev - ammount;
+
+    if (delta == 0) return;
+
+    const card = await this.findOne(owid, cardId);
+
+    await this.update(cardId, {
+      availableLimit: card.availableLimit + delta,
+      spendingLimit: card.spendingLimit,
+      nickname: card.nickname,
+      cardNumber: card.cardNumber,
+      flag: card.flag,
+      ownerId: owid,
     });
   }
 
