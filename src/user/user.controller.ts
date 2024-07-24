@@ -7,21 +7,27 @@ import {
   Delete,
   Query,
   Put,
+  Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { FindAllQueryDto } from './dto/findAll-query.dto';
+import { CreateUseService } from './create-user.service';
+import { Response } from 'express';
 
 @ApiTags('users')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly createUserSvc: CreateUseService,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    return await this.userService.create(createUserDto);
+    return await this.createUserSvc.execute(createUserDto);
   }
 
   @Get()
@@ -39,12 +45,24 @@ export class UserController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.userService.update(id, updateUserDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Res() res: Response,
+  ) {
+    await this.userService.update(id, updateUserDto);
+    res.status(200).json({
+      message: 'User updated successfully',
+      statusCode: 200,
+    });
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return await this.userService.remove(id);
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    await this.userService.remove(id);
+    res.status(200).json({
+      message: 'User deleted successfully',
+      statusCode: 200,
+    });
   }
 }

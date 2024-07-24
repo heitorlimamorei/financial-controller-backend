@@ -67,6 +67,23 @@ export class UserService {
     });
   }
 
+  async setPersonalSpreadSheet(id: string, spreadSheetId: string) {
+    const user = await this.findOne(id);
+
+    await this.firebase.SetDoc({
+      collection: 'users',
+      id,
+      payload: {
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt,
+        updatedAt: new Date(),
+        sheetIds: [],
+        personalSpreadSheet: spreadSheetId,
+      },
+    });
+  }
+
   async remove(id: string) {
     await this.firebase.DeleteOne({
       collection: 'users',
