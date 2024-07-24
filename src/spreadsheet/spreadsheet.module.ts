@@ -7,5 +7,6 @@ import { FirebaseModule } from 'src/shared/providers/firebase/firebase.module';
   imports: [FirebaseModule],
   controllers: [SpreadsheetController],
   providers: [SpreadsheetService],
+  exports: [SpreadsheetService],
 })
 export class SpreadsheetModule {}
