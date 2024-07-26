@@ -207,6 +207,26 @@ export class CreditCardService {
     });
   }
 
+  async setLastBill(owid: string, id: string, date: Date): Promise<void> {
+    const creditCard = await this.findOne(owid, id);
+
+    await this.firebase.SetDoc({
+      collection: `users/${owid}/credit_card`,
+      id,
+      payload: {
+        availableLimit: creditCard.availableLimit,
+        spendingLimit: creditCard.spendingLimit,
+        nickname: creditCard.nickname,
+        cardNumber: creditCard.cardNumber,
+        flag: creditCard.flag,
+        financialInstitution: creditCard.financialInstitution,
+        expirationDate: creditCard.expirationDate,
+        lastBill: this.firebase.transformeDateToTimeStamp(date),
+        ownerId: creditCard.ownerId,
+      },
+    });
+  }
+
   async increaseAvailableLimit(
     owid: string,
     cardId: string,
