@@ -9,6 +9,7 @@ export default interface ICreditCard {
   cardNumber: string;
   flag: CardBrands;
   expirationDate: firebaseTimesStampType;
+  lastBill?: firebaseTimesStampType;
   financialInstitution: string;
   spendingLimit: number;
   availableLimit: number;
