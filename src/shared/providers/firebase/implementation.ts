@@ -12,6 +12,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  Timestamp,
 } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import {
@@ -27,6 +28,7 @@ import {
 import sanitilizeArrayData from 'src/shared/utils/firebase/transformers';
 import { HttpException } from '@nestjs/common';
 import { PromiseScheduler } from 'src/shared/utils/resources/promises';
+import { firebaseTimesStampType } from 'src/shared/utils/firebase/firebase.types';
 
 export class FirebaseImplementation {
   private db: Firestore;
@@ -45,6 +47,10 @@ export class FirebaseImplementation {
 
   private generateFirebaseError(message: string, code: number) {
     throw new HttpException(`REPOSITORY ERROR: ${message}`, code);
+  }
+
+  transformeDateToTimeStamp(date: Date): firebaseTimesStampType {
+    return Timestamp.fromDate(date);
   }
 
   async findAll<T>(props: IFindAllPayload): Promise<T[]> {
