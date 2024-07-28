@@ -10,6 +10,10 @@ export class BillController {
 
   @Post('close-bill')
   async closeBill(@Body() body: CloseBillDto) {
-    await this.closeBillSvc.execute(body.sheetid, body.owid, body.creditCardId);
+    return await this.closeBillSvc.execute(
+      body.sheetid,
+      body.owid,
+      body.creditCardId,
+    );
   }
 }
