@@ -3,7 +3,11 @@ import { CreditCardService } from 'src/credit_card/credit_card.service';
 import { FirebaseImplementation } from 'src/shared/providers/firebase/implementation';
 import { CreateCreditCardItemDto } from './dto/create-credit-card-item.dto';
 import { toggleJsonToDate } from 'src/shared/utils/date/datefunctions';
-import { ICreditCardItem, IUpdateCardItem } from './items.types';
+import {
+  ICreditCardItem,
+  IUpdateCardItem,
+  IUpdateInstallmentsItem,
+} from './items.types';
 import { IQuery } from 'src/shared/providers/firebase/types/firebase.api.types';
 import { UpdateCreditCardItemDto } from './dto/update-credit-card-item.dto';
 
@@ -64,6 +68,8 @@ export class CreditCardItemService {
         categoryId: newCreditCardItemDto.categoryId,
         amount: newCreditCardItemDto.amount,
         date: dateF,
+        updateLocked: false,
+        hasBeenPaid: false,
       },
     });
 
@@ -125,6 +131,72 @@ export class CreditCardItemService {
     return resp;
   }
 
+  async findUpFrontItemsForTheCurrentBill(
+    sheetId: string,
+    owid: string,
+    creditCardId: string,
+  ): Promise<ICreditCardItem[]> {
+    const creditCard = await this.creditCardSvc.findOne(owid, creditCardId);
+
+    const queries: IQuery<any>[] = [
+      {
+        field: 'creditCardId',
+        condition: '==',
+        value: creditCardId,
+      },
+      {
+        field: 'parcellsNumber',
+        condition: '==',
+        value: 1,
+      },
+      {
+        field: 'hasBeenPaid',
+        condition: '==',
+        value: false,
+      },
+    ];
+
+    if (creditCard?.lastBill) {
+      queries.push({
+        field: 'date',
+        condition: '>',
+        value: creditCard.lastBill,
+      });
+    }
+
+    const paidUpFrontItems = await this.firebaseSvc.findAll<ICreditCardItem>({
+      collection: `sheets/${sheetId}/credit_card_items`,
+      query: queries,
+    });
+
+    return paidUpFrontItems;
+  }
+
+  async findPaidInInstallmentsItems(sheetId: string, creditCardId: string) {
+    const paidItems = await this.firebaseSvc.findAll<ICreditCardItem>({
+      collection: `sheets/${sheetId}/credit_card_items`,
+      query: [
+        {
+          field: 'creditCardId',
+          condition: '==',
+          value: creditCardId,
+        },
+        {
+          field: 'parcellsNumber',
+          condition: '>',
+          value: 1,
+        },
+        {
+          field: 'hasBeenPaid',
+          condition: '==',
+          value: false,
+        },
+      ],
+    });
+
+    return paidItems;
+  }
+
   async update(
     id: string,
     sheetId: string,
@@ -170,6 +242,37 @@ export class CreditCardItemService {
       collection: `sheets/${sheetId}/credit_card_items`,
       id,
       payload: creditCardItem,
+    });
+  }
+
+  async updateUpFrontItem(sheetId: string, id: string) {
+    await this.firebaseSvc.UpdateOne({
+      collection: `sheets/${sheetId}/credit_card_items`,
+      id,
+      payload: {
+        updateLocked: true,
+        hasBeenPaid: true,
+      },
+    });
+  }
+
+  async updatePaidInInstallmentsItem(props: IUpdateInstallmentsItem) {
+    const payload = {
+      updatedLocked: true,
+      hasBeenPaid: props.hasBeenPaid,
+      currentParcell: props.currentParcell,
+    };
+
+    if (props.currentParcell < props.parcellsNumber) {
+      payload.currentParcell += 1;
+    } else {
+      payload.hasBeenPaid = true;
+    }
+
+    await this.firebaseSvc.UpdateOne({
+      collection: `sheets/${props.sheetId}/credit_card_items`,
+      id: props.id,
+      payload,
     });
   }
 

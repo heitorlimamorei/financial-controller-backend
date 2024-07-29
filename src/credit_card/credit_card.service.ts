@@ -99,7 +99,7 @@ export class CreditCardService {
         return {
           id: c.id,
           ownerId: c.ownerId,
-          speendingLimit: c.spendingLimit,
+          spendingLimit: c.spendingLimit,
           availableLimit: c.availableLimit,
         };
       },
@@ -199,10 +199,30 @@ export class CreditCardService {
       id,
       payload: {
         availableLimit: updateCreditCardDto.availableLimit,
-        speendingLimit: updateCreditCardDto.spendingLimit,
+        spendingLimit: updateCreditCardDto.spendingLimit,
         nickname: updateCreditCardDto.nickname,
         cardNumber: cardNumber,
         flag: cardFlag,
+      },
+    });
+  }
+
+  async setLastBill(owid: string, id: string, date: Date): Promise<void> {
+    const creditCard = await this.findOne(owid, id);
+
+    await this.firebase.SetDoc({
+      collection: `users/${owid}/credit_card`,
+      id,
+      payload: {
+        availableLimit: creditCard.availableLimit,
+        spendingLimit: creditCard.spendingLimit,
+        nickname: creditCard.nickname,
+        cardNumber: creditCard.cardNumber,
+        flag: creditCard.flag,
+        financialInstitution: creditCard.financialInstitution,
+        expirationDate: creditCard.expirationDate,
+        lastBill: this.firebase.transformeDateToTimeStamp(date),
+        ownerId: creditCard.ownerId,
       },
     });
   }

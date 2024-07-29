@@ -9,6 +9,7 @@ import { AccountModule } from './account/account.module';
 import { CategoryModule } from './category/category.module';
 import { SpreadsheetModule } from './spreadsheet/spreadsheet.module';
 import { ItemsModule } from './items/items.module';
+import { BillModule } from './bill/bill.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ItemsModule } from './items/items.module';
     CategoryModule,
     SpreadsheetModule,
     ItemsModule,
+    BillModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -25,7 +25,9 @@ export interface ICreditCardItem {
   interest: number;
   parcellsNumber: number;
   currentParcell: number;
+  hasBeenPaid: boolean;
   date: firebaseTimesStampType;
+  updateLocked: boolean;
 }
 
 export interface IUpdateCardItem {
@@ -36,4 +38,12 @@ export interface IUpdateCardItem {
   categoryId?: string;
   amount?: number;
   date?: string | Date;
+}
+
+export interface IUpdateInstallmentsItem {
+  id: string;
+  sheetId: string;
+  currentParcell: number;
+  parcellsNumber: number;
+  hasBeenPaid: boolean;
 }

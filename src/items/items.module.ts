@@ -8,6 +8,7 @@ import { CreditCardModule } from 'src/credit_card/credit_card.module';
 import { CreditCardItemController } from './credit_card_item.controller';
 
 @Module({
+  exports: [CreditCardItemService],
   imports: [FirebaseModule, AccountModule, CreditCardModule],
   controllers: [ItemsController, CreditCardItemController],
   providers: [ItemsService, CreditCardItemService],
