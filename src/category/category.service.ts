@@ -150,7 +150,7 @@ export class CategoryService {
 
   async remove(sheetId: string, id: string) {
     await this.firebaseService.DeleteOne({
-      collection: `sheets/${sheetId}`,
+      collection: `sheets/${sheetId}/category`,
       id,
     });
   }
