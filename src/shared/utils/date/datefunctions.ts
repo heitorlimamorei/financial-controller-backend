@@ -44,7 +44,7 @@ export const isToday = (date: Date): boolean => {
 };
 
 export const addDays = (nDays: number, date: Date): Date => {
-  const dateF = { ...date };
-  dateF.setDate(dateF.getDate() + nDays);
+  const dateF = new Date(date);
+  dateF.setDate(date.getDate() + nDays);
   return dateF;
 };
