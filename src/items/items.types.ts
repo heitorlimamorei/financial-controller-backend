@@ -47,3 +47,17 @@ export interface IUpdateInstallmentsItem {
   parcellsNumber: number;
   hasBeenPaid: boolean;
 }
+
+export interface IRecurringExpense {
+  id: string;
+  name: string;
+  description: string;
+  amount: number;
+  frequency: number; // n days of interval between billing charges
+  lastCharge: firebaseTimesStampType;
+  nextCharge: firebaseTimesStampType;
+  categoryId: string;
+  ownerId: string;
+  paymentMethod: 'credit-card' | 'account';
+  paymentMethodId: string;
+}

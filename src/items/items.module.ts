@@ -6,11 +6,17 @@ import { AccountModule } from 'src/account/account.module';
 import { CreditCardItemService } from './credit_card_item.service';
 import { CreditCardModule } from 'src/credit_card/credit_card.module';
 import { CreditCardItemController } from './credit_card_item.controller';
+import { RecurringIemService } from './recurring_item.service';
+import { RecurringItemController } from './recurring_item.controller';
 
 @Module({
   exports: [CreditCardItemService],
   imports: [FirebaseModule, AccountModule, CreditCardModule],
-  controllers: [ItemsController, CreditCardItemController],
-  providers: [ItemsService, CreditCardItemService],
+  controllers: [
+    ItemsController,
+    CreditCardItemController,
+    RecurringItemController,
+  ],
+  providers: [ItemsService, CreditCardItemService, RecurringIemService],
 })
 export class ItemsModule {}
