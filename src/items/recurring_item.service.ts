@@ -35,7 +35,7 @@ export class RecurringIemService {
       const id = await this.itemService.create({
         ...baseItem,
         accountId: item.paymentMethodId,
-        type: 'INCOME',
+        type: 'EXPENSE',
       });
 
       return id;
@@ -150,7 +150,7 @@ export class RecurringIemService {
     }
 
     const charges = recurringItems.map(async (item) => {
-      return this.chargeItem({
+      const id = await this.chargeItem({
         name: item.name,
         description: item.description,
         amount: item.amount,
@@ -162,6 +162,10 @@ export class RecurringIemService {
         startDate: '',
         frequency: 0,
       });
+      return {
+        recurringItemId: item.id,
+        createdItemId: id,
+      };
     });
 
     const resp = await Promise.allSettled(charges);
@@ -178,12 +182,14 @@ export class RecurringIemService {
 
     const idexedItems = arrayToHashMap(recurringItems, 'id');
 
-    idsF.forEach((itemId) => itemsTobeUpdated.push(idexedItems[itemId]));
+    idsF.forEach((itemId) =>
+      itemsTobeUpdated.push(idexedItems[itemId.recurringItemId]),
+    );
 
     await Promise.all(
       itemsTobeUpdated.map((item) => this.setItemAsCharged(sheetId, item)),
     );
 
-    return idsF;
+    return idsF.map((c) => c.createdItemId);
   }
 }
