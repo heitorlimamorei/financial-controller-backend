@@ -33,3 +33,18 @@ export const toggleJsonToDate = (date: string) => {
     throw new Error('This method supports only string');
   return new Date(date);
 };
+
+export const isToday = (date: Date): boolean => {
+  const today = new Date();
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  );
+};
+
+export const addDays = (nDays: number, date: Date): Date => {
+  const dateF = new Date(date);
+  dateF.setDate(date.getDate() + nDays);
+  return dateF;
+};
