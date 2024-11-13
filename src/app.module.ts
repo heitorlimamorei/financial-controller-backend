@@ -10,6 +10,7 @@ import { CategoryModule } from './category/category.module';
 import { SpreadsheetModule } from './spreadsheet/spreadsheet.module';
 import { ItemsModule } from './items/items.module';
 import { BillModule } from './bill/bill.module';
+import { TextcompressionModule } from './shared/providers/textcompression/textcompression.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BillModule } from './bill/bill.module';
     SpreadsheetModule,
     ItemsModule,
     BillModule,
+    TextcompressionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
