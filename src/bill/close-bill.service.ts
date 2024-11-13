@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { CreditCardService } from '../credit_card/credit_card.service';
 import { CreditCardItemService } from 'src/items/credit_card_item.service';
 import { PromiseScheduler } from 'src/shared/utils/resources/promises';
+import { IBillReport } from './bill.types';
+import {
+  firestoreTimestampToDate,
+  toggleDateToJson,
+} from 'src/shared/utils/date/datefunctions';
 
 @Injectable()
 export class CloseBillService {
@@ -14,7 +19,7 @@ export class CloseBillService {
     sheetId: string,
     owid: string,
     creditCardId: string,
-  ) {
+  ): Promise<IBillReport> {
     const upFrontItems =
       await this.creditCardItemService.findUpFrontItemsForTheCurrentBill(
         sheetId,
@@ -36,14 +41,33 @@ export class CloseBillService {
 
     return {
       totalValue,
-      ids: upFrontItems.map(({ id }) => id),
+      items: upFrontItems.map(
+        ({
+          id,
+          parcellsNumber,
+          currentParcell,
+          hasBeenPaid,
+          amount,
+          name,
+          date,
+        }) => ({
+          id,
+          parcellsNumber,
+          currentParcell,
+          hasBeenPaid,
+          name,
+          date: toggleDateToJson(firestoreTimestampToDate(date)),
+          amount,
+          installment: amount / parcellsNumber,
+        }),
+      ),
     };
   }
 
   private async handlePaidInInstallmentsItems(
     sheetId: string,
     creditCardId: string,
-  ) {
+  ): Promise<IBillReport> {
     const paidInInstallmentsItems =
       await this.creditCardItemService.findPaidInInstallmentsItems(
         sheetId,
@@ -69,7 +93,26 @@ export class CloseBillService {
 
     return {
       totalValue,
-      ids: paidInInstallmentsItems.map(({ id }) => id),
+      items: paidInInstallmentsItems.map(
+        ({
+          id,
+          parcellsNumber,
+          currentParcell,
+          hasBeenPaid,
+          amount,
+          name,
+          date,
+        }) => ({
+          id,
+          name,
+          parcellsNumber,
+          currentParcell,
+          hasBeenPaid,
+          amount,
+          date: toggleDateToJson(firestoreTimestampToDate(date)),
+          installment: amount / parcellsNumber,
+        }),
+      ),
     };
   }
 

@@ -1,13 +1,58 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { FirebaseImplementation } from 'src/shared/providers/firebase/implementation';
-import { CrateBillDto } from './dto/create-bill.dto';
+import { CreateBillDto } from './dto/create-bill.dto';
 import { IBill } from './bill.types';
+import { CloseBillService } from './close-bill.service';
+import { TextCompressionService } from 'src/shared/providers/textcompression/compression/compression.service';
+import { toggleDateToJson } from 'src/shared/utils/date/datefunctions';
 
 @Injectable()
 export class BillService {
-  constructor(private readonly firebase: FirebaseImplementation) {}
+  constructor(
+    private readonly firebase: FirebaseImplementation,
+    private readonly closeBillSvc: CloseBillService,
+    private readonly textCompression: TextCompressionService,
+  ) {}
 
-  async create(createBillDto: CrateBillDto) {
+  async handleCloseBill(sheetId: string, owid: string, cardId: string) {
+    const report = await this.closeBillSvc.execute(sheetId, owid, cardId);
+
+    const resume = {
+      paidInInstallments: report.paidInInstallments,
+      paidUpFront: report.upfront,
+    };
+
+    const compressedResume = await this.textCompression.compressText(
+      JSON.stringify(resume),
+    );
+
+    const ids = [
+      ...report.paidInInstallments.items,
+      ...report.upfront.items,
+    ].map((item) => item.id);
+
+    const closedAt = new Date();
+
+    const billId = await this.create({
+      owid,
+      sheetId,
+      resume: compressedResume,
+      total: report.total,
+      creditCardId: cardId,
+      ids,
+      closedAt,
+    });
+
+    return {
+      id: billId,
+      totalValue: report.total,
+      creditCardId: cardId,
+      closedAt: toggleDateToJson(closedAt),
+      resume: compressedResume,
+    };
+  }
+
+  async create(createBillDto: CreateBillDto) {
     const billId = await this.firebase.Create({
       collection: `users/${createBillDto.owid}/bill`,
       payload: {
@@ -17,6 +62,7 @@ export class BillService {
         total: createBillDto.total,
         ids: createBillDto.ids,
         resume: createBillDto.resume,
+        closedAt: createBillDto.closedAt,
       },
     });
 

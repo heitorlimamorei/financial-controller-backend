@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsDate, IsNumber, IsString } from 'class-validator';
 
 export class CreateBillDto {
   @ApiProperty()
@@ -26,4 +26,7 @@ export class CreateBillDto {
   @ApiProperty()
   @IsString({ message: 'Resume must be defined and be a string' })
   resume: string;
+
+  @IsDate({ message: 'Resume must be defined and be a date' })
+  closedAt: Date;
 }
