@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsString } from 'class-validator';
 
-export class CrateBillDto {
+export class CreateBillDto {
   @ApiProperty()
   @IsString({ message: 'CreditCardId must be defined and be a string' })
   creditCardId: string;

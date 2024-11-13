@@ -4,7 +4,7 @@ import { CreditCardItemService } from 'src/items/credit_card_item.service';
 import { PromiseScheduler } from 'src/shared/utils/resources/promises';
 
 @Injectable()
-export class ClonseBillService {
+export class CloseBillService {
   constructor(
     private readonly creditCardService: CreditCardService,
     private readonly creditCardItemService: CreditCardItemService,
@@ -27,6 +27,7 @@ export class ClonseBillService {
       0,
     );
 
+    // set the items as updatedLocked and hasBeenPaid
     await PromiseScheduler(
       upFrontItems.map((item) => {
         return this.creditCardItemService.updateUpFrontItem(sheetId, item.id);

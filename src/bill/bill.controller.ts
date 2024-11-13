@@ -10,9 +10,9 @@ import {
   Res,
 } from '@nestjs/common';
 import { CloseBillDto } from './dto/close-bill.dto';
-import { ClonseBillService } from './close-bill.service';
+import { CloseBillService } from './close-bill.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CrateBillDto } from './dto/create-bill.dto';
+import { CreateBillDto } from './dto/create-bill.dto';
 import { BillService } from './bill.service';
 import { UpdateBillDto } from './dto/update-bill.dto';
 import { Response } from 'express';
@@ -21,7 +21,7 @@ import { Response } from 'express';
 @Controller('bill')
 export class BillController {
   constructor(
-    private readonly closeBillSvc: ClonseBillService,
+    private readonly closeBillSvc: CloseBillService,
     private readonly billService: BillService,
   ) {}
 
@@ -35,7 +35,7 @@ export class BillController {
   }
 
   @Post()
-  async create(@Body() createBillDto: CrateBillDto) {
+  async create(@Body() createBillDto: CreateBillDto) {
     return await this.billService.create(createBillDto);
   }
 
