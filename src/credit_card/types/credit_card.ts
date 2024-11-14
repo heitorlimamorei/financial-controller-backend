@@ -13,6 +13,7 @@ export default interface ICreditCard {
   financialInstitution: string;
   spendingLimit: number;
   availableLimit: number;
+  billList: string[];
 }
 
 export interface ICreditCardLimitsData {

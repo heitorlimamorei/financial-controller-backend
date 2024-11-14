@@ -65,6 +65,7 @@ export class CreditCardService {
       cardNumber,
       flag: cardFlag,
       expirationDate,
+      billList: [],
     };
 
     const resp = await this.firebase.Create({
@@ -207,6 +208,50 @@ export class CreditCardService {
     });
   }
 
+  async addBillIntoTheList(owid: string, cardId: string, billId: string) {
+    const creditCard = await this.findOne(owid, cardId);
+
+    await this.firebase.SetDoc({
+      collection: `users/${owid}/credit_card`,
+      id: cardId,
+      payload: {
+        availableLimit: creditCard.availableLimit,
+        spendingLimit: creditCard.spendingLimit,
+        nickname: creditCard.nickname,
+        cardNumber: creditCard.cardNumber,
+        flag: creditCard.flag,
+        financialInstitution: creditCard.financialInstitution,
+        expirationDate: creditCard.expirationDate,
+        lastBill: creditCard.lastBill,
+        ownerId: creditCard.ownerId,
+        billList: [...creditCard.billList, billId],
+      },
+    });
+  }
+
+  async removeBillIntoTheList(owid: string, cardId: string, billId: string) {
+    const creditCard = await this.findOne(owid, cardId);
+
+    const billList = [...creditCard.billList].filter((c) => c !== billId);
+
+    await this.firebase.SetDoc({
+      collection: `users/${owid}/credit_card`,
+      id: cardId,
+      payload: {
+        availableLimit: creditCard.availableLimit,
+        spendingLimit: creditCard.spendingLimit,
+        nickname: creditCard.nickname,
+        cardNumber: creditCard.cardNumber,
+        flag: creditCard.flag,
+        financialInstitution: creditCard.financialInstitution,
+        expirationDate: creditCard.expirationDate,
+        lastBill: creditCard.lastBill,
+        ownerId: creditCard.ownerId,
+        billList: billList,
+      },
+    });
+  }
+
   async setLastBill(owid: string, id: string, date: Date): Promise<void> {
     const creditCard = await this.findOne(owid, id);
 
@@ -223,6 +268,7 @@ export class CreditCardService {
         expirationDate: creditCard.expirationDate,
         lastBill: this.firebase.transformeDateToTimeStamp(date),
         ownerId: creditCard.ownerId,
+        billList: creditCard.billList,
       },
     });
   }

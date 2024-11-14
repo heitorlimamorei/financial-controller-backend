@@ -5,6 +5,7 @@ import { IBill } from './bill.types';
 import { CloseBillService } from './close-bill.service';
 import { TextCompressionService } from 'src/shared/providers/textcompression/compression/compression.service';
 import { toggleDateToJson } from 'src/shared/utils/date/datefunctions';
+import { CreditCardService } from 'src/credit_card/credit_card.service';
 
 @Injectable()
 export class BillService {
@@ -12,6 +13,7 @@ export class BillService {
     private readonly firebase: FirebaseImplementation,
     private readonly closeBillSvc: CloseBillService,
     private readonly textCompression: TextCompressionService,
+    private readonly creditCardSvc: CreditCardService,
   ) {}
 
   async handleCloseBill(sheetId: string, owid: string, cardId: string) {
@@ -42,6 +44,8 @@ export class BillService {
       ids,
       closedAt,
     });
+
+    await this.creditCardSvc.addBillIntoTheList(owid, cardId, billId);
 
     return {
       id: billId,
