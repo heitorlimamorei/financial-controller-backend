@@ -4,12 +4,13 @@ import { CreateRecurringItemDto } from './dto/create-recurring-item.dto';
 import {
   addDays,
   firestoreTimestampToDate,
+  toggleDateToJson,
   toggleJsonToDate,
 } from 'src/shared/utils/date/datefunctions';
 import { CreditCardItemService } from './credit_card_item.service';
 import { ItemsService } from './items.service';
 import { IQuery } from 'src/shared/providers/firebase/types/firebase.api.types';
-import { IRecurringExpense } from './items.types';
+import { IRecurringExpense, IRecurringItemChargePayload } from './items.types';
 import { arrayToHashMap } from 'src/shared/utils/transformers';
 
 @Injectable()
@@ -20,12 +21,12 @@ export class RecurringIemService {
     private readonly itemService: ItemsService,
   ) {}
 
-  async chargeItem(item: CreateRecurringItemDto) {
+  async chargeItem(item: IRecurringItemChargePayload) {
     const baseItem = {
       name: item.name,
       description: item.description,
       amount: item.amount,
-      date: new Date().toJSON(),
+      date: toggleDateToJson(item.nextDate),
       categoryId: item.categoryId,
       sheetId: item.sheetId,
       ownerId: item.owid,
@@ -55,6 +56,8 @@ export class RecurringIemService {
     const startDate = toggleJsonToDate(recurringExpenseDto.startDate);
     const nextChargeDate = addDays(recurringExpenseDto.frequency, startDate);
 
+    const startDateHasBeenPassed = startDate <= new Date();
+
     const resp = await this.firebaseService.Create({
       collection: `sheets/${recurringExpenseDto.sheetId}/recurring_item`,
       payload: {
@@ -63,7 +66,7 @@ export class RecurringIemService {
         amount: recurringExpenseDto.amount,
         frequency: recurringExpenseDto.frequency,
         lastCharge: this.firebaseService.transformeDateToTimeStamp(startDate),
-        nextDate: nextChargeDate,
+        nextDate: startDateHasBeenPassed ? startDate : nextChargeDate,
         categoryId: recurringExpenseDto.categoryId,
         ownerId: recurringExpenseDto.owid,
         paymentMethod: recurringExpenseDto.paymentMethod,
@@ -71,7 +74,19 @@ export class RecurringIemService {
       },
     });
 
-    await this.chargeItem(recurringExpenseDto);
+    if (startDateHasBeenPassed) {
+      await this.chargeItem({
+        name: recurringExpenseDto.name,
+        description: recurringExpenseDto.description,
+        amount: recurringExpenseDto.amount,
+        nextDate: startDate,
+        categoryId: recurringExpenseDto.categoryId,
+        sheetId: recurringExpenseDto.sheetId,
+        owid: recurringExpenseDto.owid,
+        paymentMethod: recurringExpenseDto.paymentMethod,
+        paymentMethodId: recurringExpenseDto.paymentMethodId,
+      });
+    }
 
     return resp;
   }
@@ -120,12 +135,14 @@ export class RecurringIemService {
       firestoreTimestampToDate(item.lastCharge),
     );
 
+    const currentCharge = item.nextCharge;
+
     await this.firebaseService.UpdateOne({
       collection: `sheets/${sheetId}/recurring_item`,
       id: item.id,
       payload: {
         nextCharge: nextChargeDate,
-        lastCharge: new Date(),
+        lastCharge: currentCharge,
       },
     });
   }
@@ -152,6 +169,7 @@ export class RecurringIemService {
     const charges = recurringItems.map(async (item) => {
       const id = await this.chargeItem({
         name: item.name,
+        nextDate: firestoreTimestampToDate(item.nextCharge),
         description: item.description,
         amount: item.amount,
         owid: item.ownerId,
@@ -159,8 +177,6 @@ export class RecurringIemService {
         categoryId: item.categoryId,
         paymentMethod: item.paymentMethod,
         paymentMethodId: item.paymentMethodId,
-        startDate: '',
-        frequency: 0,
       });
       return {
         recurringItemId: item.id,

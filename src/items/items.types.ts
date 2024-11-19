@@ -61,3 +61,15 @@ export interface IRecurringExpense {
   paymentMethod: 'credit-card' | 'account';
   paymentMethodId: string;
 }
+
+export interface IRecurringItemChargePayload {
+  name: string;
+  description: string;
+  amount: number;
+  nextDate: Date;
+  categoryId: string;
+  sheetId: string;
+  paymentMethod: 'credit-card' | 'account';
+  paymentMethodId: string;
+  owid: string;
+}
