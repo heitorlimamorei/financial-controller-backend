@@ -66,7 +66,7 @@ export interface IRecurringItemChargePayload {
   name: string;
   description: string;
   amount: number;
-  nextDate: Date;
+  nextCharge: Date;
   categoryId: string;
   sheetId: string;
   paymentMethod: 'credit-card' | 'account';

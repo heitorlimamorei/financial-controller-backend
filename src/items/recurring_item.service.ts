@@ -26,7 +26,7 @@ export class RecurringIemService {
       name: item.name,
       description: item.description,
       amount: item.amount,
-      date: toggleDateToJson(item.nextDate),
+      date: toggleDateToJson(item.nextCharge),
       categoryId: item.categoryId,
       sheetId: item.sheetId,
       ownerId: item.owid,
@@ -66,7 +66,7 @@ export class RecurringIemService {
         amount: recurringExpenseDto.amount,
         frequency: recurringExpenseDto.frequency,
         lastCharge: this.firebaseService.transformeDateToTimeStamp(startDate),
-        nextDate: startDateHasBeenPassed ? startDate : nextChargeDate,
+        nextCharge: startDateHasBeenPassed ? startDate : nextChargeDate,
         categoryId: recurringExpenseDto.categoryId,
         ownerId: recurringExpenseDto.owid,
         paymentMethod: recurringExpenseDto.paymentMethod,
@@ -79,7 +79,7 @@ export class RecurringIemService {
         name: recurringExpenseDto.name,
         description: recurringExpenseDto.description,
         amount: recurringExpenseDto.amount,
-        nextDate: startDate,
+        nextCharge: startDate,
         categoryId: recurringExpenseDto.categoryId,
         sheetId: recurringExpenseDto.sheetId,
         owid: recurringExpenseDto.owid,
@@ -130,12 +130,12 @@ export class RecurringIemService {
     sheetId: string,
     item: IRecurringExpense,
   ): Promise<void> {
+    const currentCharge = item.nextCharge;
+
     const nextChargeDate = addDays(
       item.frequency,
-      firestoreTimestampToDate(item.lastCharge),
+      firestoreTimestampToDate(currentCharge),
     );
-
-    const currentCharge = item.nextCharge;
 
     await this.firebaseService.UpdateOne({
       collection: `sheets/${sheetId}/recurring_item`,
@@ -155,7 +155,7 @@ export class RecurringIemService {
         collection: `sheets/${sheetId}/recurring_item`,
         query: [
           {
-            field: 'nextDate',
+            field: 'nextCharge',
             condition: '<=',
             value: today,
           },
@@ -169,7 +169,7 @@ export class RecurringIemService {
     const charges = recurringItems.map(async (item) => {
       const id = await this.chargeItem({
         name: item.name,
-        nextDate: firestoreTimestampToDate(item.nextCharge),
+        nextCharge: firestoreTimestampToDate(item.nextCharge),
         description: item.description,
         amount: item.amount,
         owid: item.ownerId,
