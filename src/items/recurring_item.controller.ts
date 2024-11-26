@@ -28,11 +28,11 @@ export class RecurringItemController {
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Query('sheeid') sheeid: string,
+    @Query('sheetid') sheetId: string,
     @Body() updatedFields: UpdateRecurringItemDto,
     @Res() res: Response,
   ) {
-    await this.recurringItemsService.updateOne(sheeid, id, updatedFields);
+    await this.recurringItemsService.updateOne(sheetId, id, updatedFields);
     res.status(200).json({
       message: 'Item updated successfully',
       statusCode: 200,
@@ -40,14 +40,14 @@ export class RecurringItemController {
   }
 
   @Post('check-recurring-items')
-  async checkRecurringItems(@Query('sheetId') sheetId: string) {
+  async checkRecurringItems(@Query('sheetid') sheetId: string) {
     const charges =
       await this.recurringItemsService.executeGlobalCharge(sheetId);
     return charges;
   }
 
   @Get()
-  async findAll(@Query('sheetId') sheetId: string) {
+  async findAll(@Query('sheetid') sheetId: string) {
     return await this.recurringItemsService.findAll(sheetId);
   }
 
