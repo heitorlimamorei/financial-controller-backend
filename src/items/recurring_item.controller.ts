@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -12,6 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { RecurringIemService } from './recurring_item.service';
 import { CreateRecurringItemDto } from './dto/create-recurring-item.dto';
 import { Response } from 'express';
+import { UpdateRecurringItemDto } from './dto/update-recurring-item.dto';
 
 @ApiTags('Recurring Item')
 @Controller('recurring-items')
@@ -21,6 +23,20 @@ export class RecurringItemController {
   @Post()
   async create(@Body() recurringExpenseDto: CreateRecurringItemDto) {
     return await this.recurringItemsService.create(recurringExpenseDto);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Query('sheeid') sheeid: string,
+    @Body() updatedFields: UpdateRecurringItemDto,
+    @Res() res: Response,
+  ) {
+    await this.recurringItemsService.updateOne(sheeid, id, updatedFields);
+    res.status(200).json({
+      message: 'Item updated successfully',
+      statusCode: 200,
+    });
   }
 
   @Post('check-recurring-items')

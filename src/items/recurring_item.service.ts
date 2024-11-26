@@ -12,6 +12,7 @@ import { ItemsService } from './items.service';
 import { IQuery } from 'src/shared/providers/firebase/types/firebase.api.types';
 import { IRecurringExpense, IRecurringItemChargePayload } from './items.types';
 import { arrayToHashMap } from 'src/shared/utils/transformers';
+import { UpdateRecurringItemDto } from './dto/update-recurring-item.dto';
 
 @Injectable()
 export class RecurringIemService {
@@ -89,6 +90,24 @@ export class RecurringIemService {
     }
 
     return resp;
+  }
+
+  async updateOne(
+    sheetId: string,
+    id: string,
+    updatedDto: UpdateRecurringItemDto,
+  ): Promise<void> {
+    await this.firebaseService.UpdateOne({
+      collection: `sheets/${sheetId}/recurring_item`,
+      id,
+      payload: {
+        name: updatedDto.name,
+        description: updatedDto.description,
+        amount: updatedDto.amount,
+        frequency: updatedDto.frequency,
+        categoryId: updatedDto.categoryId,
+      },
+    });
   }
 
   async findAll(sheetId: string): Promise<IRecurringExpense[]> {
