@@ -10,6 +10,7 @@ import {
 } from './items.types';
 import { IQuery } from 'src/shared/providers/firebase/types/firebase.api.types';
 import { UpdateCreditCardItemDto } from './dto/update-credit-card-item.dto';
+import { PromiseScheduler } from 'src/shared/utils/resources/promises';
 
 @Injectable()
 export class CreditCardItemService {
@@ -195,6 +196,21 @@ export class CreditCardItemService {
     });
 
     return paidItems;
+  }
+
+  async findCurrentBillItems(
+    owid: string,
+    cardId: string,
+    sheetId: string,
+  ): Promise<ICreditCardItem[]> {
+    const items = await PromiseScheduler([
+      this.findPaidInInstallmentsItems(sheetId, cardId),
+      this.findUpFrontItemsForTheCurrentBill(sheetId, owid, cardId),
+    ]);
+
+    const [inInstallmentsItems, upfrontItems] = items;
+
+    return [...inInstallmentsItems, ...upfrontItems];
   }
 
   async update(

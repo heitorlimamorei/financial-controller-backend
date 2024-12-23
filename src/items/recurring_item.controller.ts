@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -12,6 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { RecurringIemService } from './recurring_item.service';
 import { CreateRecurringItemDto } from './dto/create-recurring-item.dto';
 import { Response } from 'express';
+import { UpdateRecurringItemDto } from './dto/update-recurring-item.dto';
 
 @ApiTags('Recurring Item')
 @Controller('recurring-items')
@@ -23,15 +25,29 @@ export class RecurringItemController {
     return await this.recurringItemsService.create(recurringExpenseDto);
   }
 
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Query('sheetid') sheetId: string,
+    @Body() updatedFields: UpdateRecurringItemDto,
+    @Res() res: Response,
+  ) {
+    await this.recurringItemsService.updateOne(sheetId, id, updatedFields);
+    res.status(200).json({
+      message: 'Item updated successfully',
+      statusCode: 200,
+    });
+  }
+
   @Post('check-recurring-items')
-  async checkRecurringItems(@Query('sheetId') sheetId: string) {
+  async checkRecurringItems(@Query('sheetid') sheetId: string) {
     const charges =
       await this.recurringItemsService.executeGlobalCharge(sheetId);
     return charges;
   }
 
   @Get()
-  async findAll(@Query('sheetId') sheetId: string) {
+  async findAll(@Query('sheetid') sheetId: string) {
     return await this.recurringItemsService.findAll(sheetId);
   }
 

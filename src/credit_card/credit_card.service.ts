@@ -65,6 +65,7 @@ export class CreditCardService {
       cardNumber,
       flag: cardFlag,
       expirationDate,
+      billList: [],
     };
 
     const resp = await this.firebase.Create({
@@ -207,24 +208,58 @@ export class CreditCardService {
     });
   }
 
-  async setLastBill(owid: string, id: string, date: Date): Promise<void> {
-    const creditCard = await this.findOne(owid, id);
+  async setCard(
+    owid: string,
+    cardId: string,
+    handler: (card: ICreditCard) => ICreditCard,
+  ) {
+    const creditCard = await this.findOne(owid, cardId);
+    const updatedCard = handler(creditCard);
+
+    if (!this.CreditCardUtil.isValidCreditCardNumber(updatedCard.cardNumber)) {
+      throw new HttpException('SERVICE: Invalid Credit Card number.', 400);
+    }
+
+    const safeFlag: string | null = this.CreditCardUtil.getCreditCardFlag(
+      updatedCard.cardNumber,
+    );
+
+    if (updatedCard.flag !== safeFlag) {
+      throw new HttpException(
+        'SERVICE: Invalid the provided Card flag does not match with the actual Card Flag for the provided CardNumber.',
+        400,
+      );
+    }
 
     await this.firebase.SetDoc({
       collection: `users/${owid}/credit_card`,
-      id,
+      id: cardId,
       payload: {
-        availableLimit: creditCard.availableLimit,
-        spendingLimit: creditCard.spendingLimit,
-        nickname: creditCard.nickname,
-        cardNumber: creditCard.cardNumber,
-        flag: creditCard.flag,
-        financialInstitution: creditCard.financialInstitution,
-        expirationDate: creditCard.expirationDate,
-        lastBill: this.firebase.transformeDateToTimeStamp(date),
-        ownerId: creditCard.ownerId,
+        ...updatedCard,
+        ownerId: owid,
       },
     });
+  }
+
+  async addBillIntoTheList(owid: string, cardId: string, billId: string) {
+    await this.setCard(owid, cardId, (c) => ({
+      ...c,
+      billList: [...c.billList, billId],
+    }));
+  }
+
+  async removeBillIntoTheList(owid: string, cardId: string, billId: string) {
+    await this.setCard(owid, cardId, (c) => ({
+      ...c,
+      billList: c.billList.filter((b) => b !== billId),
+    }));
+  }
+
+  async setLastBill(owid: string, id: string, date: Date): Promise<void> {
+    await this.setCard(owid, id, (c) => ({
+      ...c,
+      lastBill: this.firebase.transformeDateToTimeStamp(date),
+    }));
   }
 
   async increaseAvailableLimit(
@@ -232,33 +267,25 @@ export class CreditCardService {
     cardId: string,
     amount: number,
   ): Promise<void> {
-    if (amount <= 0) {
-      throw new HttpException(
-        'SERVICE: To increase the available limit the amount must be greater than zero.',
-        400,
-      );
-    }
+    await this.setCard(owid, cardId, (c) => {
+      if (amount <= 0) {
+        throw new HttpException(
+          'SERVICE: To increase the available limit the amount must be greater than zero.',
+          400,
+        );
+      }
 
-    const currentCard = await this.findOne(owid, cardId);
+      if (c.spendingLimit < amount + c.availableLimit) {
+        throw new HttpException(
+          'SERVICE: The available limit cannot exceed the card limit.',
+          400,
+        );
+      }
 
-    if (currentCard.spendingLimit < amount + currentCard.availableLimit) {
-      throw new HttpException(
-        'SERVICE: The available limit cannot exceed the card limit.',
-        400,
-      );
-    }
-
-    if (!currentCard) {
-      throw new HttpException('Failed to find creditCard', 404);
-    }
-
-    await this.update(cardId, {
-      ownerId: owid,
-      availableLimit: currentCard.availableLimit + amount,
-      spendingLimit: currentCard.spendingLimit,
-      nickname: currentCard.nickname,
-      cardNumber: currentCard.cardNumber,
-      flag: currentCard.flag,
+      return {
+        ...c,
+        availableLimit: c.availableLimit + amount,
+      };
     });
   }
 
@@ -274,26 +301,18 @@ export class CreditCardService {
       );
     }
 
-    const currentCard = await this.findOne(owid, cardId);
+    await this.setCard(owid, cardId, (c) => {
+      if (0 > c.availableLimit - amount) {
+        throw new HttpException(
+          'SERVICE: The available limit - amount must be greather or equal to zero.',
+          400,
+        );
+      }
 
-    if (0 > currentCard.availableLimit - amount) {
-      throw new HttpException(
-        'SERVICE: The available limit - amount must be greather or equal to zero.',
-        400,
-      );
-    }
-
-    if (!currentCard) {
-      throw new HttpException('Failed to find creditCard', 404);
-    }
-
-    await this.update(cardId, {
-      ownerId: owid,
-      availableLimit: currentCard.availableLimit - amount,
-      spendingLimit: currentCard.spendingLimit,
-      nickname: currentCard.nickname,
-      cardNumber: currentCard.cardNumber,
-      flag: currentCard.flag,
+      return {
+        ...c,
+        availableLimit: c.availableLimit - amount,
+      };
     });
   }
 
@@ -307,15 +326,11 @@ export class CreditCardService {
 
     if (delta == 0) return;
 
-    const card = await this.findOne(owid, cardId);
-
-    await this.update(cardId, {
-      availableLimit: card.availableLimit + delta,
-      spendingLimit: card.spendingLimit,
-      nickname: card.nickname,
-      cardNumber: card.cardNumber,
-      flag: card.flag,
-      ownerId: owid,
+    await this.setCard(owid, cardId, (c) => {
+      return {
+        ...c,
+        availableLimit: c.availableLimit + delta,
+      };
     });
   }
 

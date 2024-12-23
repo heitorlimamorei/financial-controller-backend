@@ -18,6 +18,7 @@ import { CreditCardItemQueryDto } from './dto/credit-card-item-query.dto';
 import { Response } from 'express';
 import { UpdateCreditCardItemDto } from './dto/update-credit-card-item.dto';
 import { UpdateCreditCardItemQueryDto } from './dto/credit-card-item-query.dto';
+import { CurrentBillQueryDto } from './dto/current-bill.query.dto';
 
 @ApiTags('Credit Card Items')
 @Controller('credit_card_items')
@@ -49,6 +50,15 @@ export class CreditCardItemController {
     return await this.creditCardItemsService.findAllByQueries(
       query.sheetid,
       queries,
+    );
+  }
+
+  @Get('/current-bill')
+  async getCurrentBill(@Query() query: CurrentBillQueryDto) {
+    return await this.creditCardItemsService.findCurrentBillItems(
+      query.owid,
+      query.creditCardId,
+      query.sheetid,
     );
   }
 
